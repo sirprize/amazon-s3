@@ -1,0 +1,45 @@
+#!/usr/bin/env php
+<?php
+
+require_once '../_config.php';
+
+
+$restClient = new \Sirprize\Rest\Client($config);
+#$restClient->setCache($cache);
+
+$s3 = new \Sirprize\Amazon\S3($config);
+$s3->setRestClient($restClient);
+
+$bucket = $s3->getBucketsInstance()->getBucketInstance();
+$bucket->setName('media.dev.kompakt.fm');
+
+$objekts = $s3->getObjektsInstance();
+
+$objekts
+	->addEventsToListener($s3->getEventPrinterInstance())
+	->setPrefix('Assets')
+	#->setDelimiter('jpg')
+	->setMaxKeys(10)
+	->startAllInBucket($bucket)
+;
+
+if($objekts->getResponseHandler()->isError())
+{
+	print 'Code: '.$objekts->getResponseHandler()->getErrorCode()."\n";
+	print 'Message: '.$objekts->getResponseHandler()->getErrorMessage()."\n";
+	exit;
+}
+
+print 'Prefix: '.$objekts->getPrefix()."\n";
+print 'Marker: '.$objekts->getMarker()."\n";
+print 'MaxKeys: '.$objekts->getMaxKeys()."\n";
+print 'Delimiter: '.$objekts->getDelimiter()."\n";
+print 'IsTruncated: '.$objekts->getIsTruncated()."\n";
+print "--------------------------------------\n";
+
+$count = 1;
+
+foreach($objekts as $objekt)
+{
+	print $count++.' - '.$objekt->getKey().' - '.$objekt->getOwner()->getDisplayName()."\n";
+}
