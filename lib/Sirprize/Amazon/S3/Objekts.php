@@ -129,8 +129,9 @@ class Objekts extends S3\Core\Collection
 	{
 		$objekt = new S3\Objekt();
 		$objekt
-			->setRestClient($this->_getRestClient())
-			->setS3($this->_getS3())
+			->setRestClient($this->getRestClient())
+			->setS3($this->getS3())
+			->setEventManager($this->getEventManager())
 		;
 		
 		return $objekt;
@@ -138,7 +139,33 @@ class Objekts extends S3\Core\Collection
 	
 	
 	
-	public function startAllInBucket(S3\Bucket $bucket)
+	/*
+	
+	<?xml version="1.0" encoding="UTF-8"?>
+	<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+		<Name>media.dev.kompakt.fm</Name>
+		<Prefix/>
+		<Marker/>
+		<MaxKeys>1000</MaxKeys>
+		<IsTruncated>true</IsTruncated>
+		<Contents>
+			<Key>4O88nAT5eaRP.gif</Key>
+			<LastModified>2010-07-20T21:41:43.000Z</LastModified>
+			<ETag>"5a5e8fc9b5d17a865cabd25ae5aecc62"</ETag>
+			<Size>6910</Size>
+			<Owner>
+				<ID>ce6b45d48e07bf20362a76aa4d367445e8d7cfabd529027eecf4e5d300d0b780</ID>
+				<DisplayName>choegl</DisplayName>
+			</Owner>
+			<StorageClass>STANDARD</StorageClass>
+		</Contents>
+	</ListBucketResult>
+	
+	*/
+	
+	
+	
+	public function startAllInBucket(S3\Bucket $bucket, $numRetries = 0)
 	{
 		if($this->_started)
 		{
@@ -169,14 +196,13 @@ class Objekts extends S3\Core\Collection
 			$args['delimiter'] = $this->_delimiter;
 		}
 		
-		$verb = 'GET';
 		$date = gmdate(S3::DATE_FORMAT);
 		$md5 = '';
 		$mime = '';
 		$key = '';
 		
-		$authSignature = $this->_getS3()->makeAuthSignature(
-			$verb,
+		$authSignature = $this->getS3()->makeAuthSignature(
+			'GET',
 			$md5,
 			$mime,
 			$date,
@@ -184,7 +210,7 @@ class Objekts extends S3\Core\Collection
 			'/'.$bucket->getName().'/'
 		);
 		
-		$headers = $this->_getS3()->getHeadersInstance();
+		$headers = $this->getS3()->getHeadersInstance();
 		
 		$headers
 			->add('Authorization: '.$authSignature)
@@ -194,39 +220,43 @@ class Objekts extends S3\Core\Collection
 		$uri = S3::makeUri($bucket->getName(), $key);
 		$uri = \Zend_Uri::factory($uri);
 		
-		try {
-		 	$this->_responseHandler = $this->_getS3()->getResponseHandlerInstance();
-			
-			$this->_getRestClient()
-				->setResponseHandler($this->_responseHandler)
-				->setUri($uri)
-				->get($args, $headers->toArray(), 2)
-			;
-			
-			if($this->_responseHandler->isError())
-			{
-				// service error
-				return $this;
-			}
-			
-			$this->load($this->_responseHandler->getDom());
-			
+		$this->getRestClient()
+			->getHttpClient()
+			->resetParameters(true)
+			->setUri($uri)
+			->setParameterGet($args)
+			->setHeaders($headers->toArray())
+		;
+		
+		$this->_responseHandler = $this->getS3()->getResponseHandlerInstance();
+		$this->getRestClient()->get($this->_responseHandler, $numRetries);
+		
+		if($this->_responseHandler->isError())
+		{
+			// service error
 			$eventArgs =
-				$this->_getS3()->getEventArgsInstance()
-				->setType(S3\Core\EventArgs::DEBUG)
-				->setMessage('result returned %1$s objects', array($this->count()))
+				$this->getS3()->getEventArgsInstance()
+				->setType(S3\Core\EventArgs::ERR)
+				->setCode($this->_responseHandler->getCode())
+				->setMessage($this->_responseHandler->getMessage())
 				->setSourceObject($this)
 			;
-			
+
 			$this->getEventManager()->dispatchEvent(self::EVENT_START_ALL_IN_BUCKET, $eventArgs);
-			
 			return $this;
 		}
-		catch(Exception $e)
-		{
-			// connection error
-			throw new S3\Exception($exception->getMessage());
-		}
+		
+		$this->load($this->_responseHandler->getDom(), $bucket);
+		
+		$eventArgs =
+			$this->getS3()->getEventArgsInstance()
+			->setType(S3\Core\EventArgs::INFO)
+			->setMessage('result returned %1$s objects', array($this->count()))
+			->setSourceObject($this)
+		;
+		
+		$this->getEventManager()->dispatchEvent(self::EVENT_START_ALL_IN_BUCKET, $eventArgs);
+		return $this;
 	}
 	
 	
@@ -236,7 +266,7 @@ class Objekts extends S3\Core\Collection
 	 *
 	 * @return \Sirprize\Amazon\S3\Objekts
 	 */
-	public function load(\DOMDocument $dom)
+	public function load(\DOMDocument $dom, S3\Bucket $bucket)
 	{
 		if($this->_loaded)
 		{
@@ -257,6 +287,7 @@ class Objekts extends S3\Core\Collection
 		foreach($dom->getElementsByTagName('ListBucketResult')->item(0)->getElementsByTagName('Contents') as $contents)
 		{
 			$objekt = $this->getObjektInstance();
+			$objekt->setBucket($bucket);
 			$objekt->load($contents);
 			$this->attach($objekt);
 		}

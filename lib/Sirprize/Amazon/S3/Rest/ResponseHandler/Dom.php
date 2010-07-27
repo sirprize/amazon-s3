@@ -22,9 +22,9 @@ class Dom extends \Sirprize\Rest\ResponseHandler\Dom
 {
 	
 	
-	public function load()
+	public function load(\Zend_Http_Response $httpResponse)
     {
-		parent::load();
+		parent::load($httpResponse);
 		
 		if($this->_dom !== null && $this->_dom->getElementsByTagName('Error')->item(0) !== null)
 		{

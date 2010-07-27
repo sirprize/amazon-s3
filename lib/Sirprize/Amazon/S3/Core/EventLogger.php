@@ -21,7 +21,7 @@ namespace Sirprize\Amazon\S3\Core;
 use \Sirprize\Amazon\S3;
 
 
-class EventPrinter extends S3\Core\EventListener
+class EventLogger extends S3\Core\EventListener
 {
 	
 	
@@ -35,7 +35,7 @@ class EventPrinter extends S3\Core\EventListener
 	}
 	
 	
-	protected function _getLog()
+	public function getLog()
 	{
 		if($this->_log === null)
 		{
@@ -53,6 +53,6 @@ class EventPrinter extends S3\Core\EventListener
 			throw new S3\Exception('first argument must be an instance of Sirprize\Amazon\S3\Core\EventArgs');
 		}
 		
-        $this->_getLog()->log($args[0]->getInfo(), $args[0]->getType());
+        $this->getLog()->log($args[0]->getInfo(), $args[0]->getType());
     }
 }

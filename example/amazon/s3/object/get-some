@@ -11,22 +11,23 @@ $s3 = new \Sirprize\Amazon\S3($config);
 $s3->setRestClient($restClient);
 
 $bucket = $s3->getBucketsInstance()->getBucketInstance();
-$bucket->setName('media.dev.kompakt.fm');
+$bucket->setName(S3_BUCKET);
 
 $objekts = $s3->getObjektsInstance();
 
 $objekts
 	->addEventsToListener($s3->getEventPrinterInstance())
-	->setPrefix('Assets')
+	->addEventsToListener($s3->getEventLoggerInstance()->setLog($log))
+	->setPrefix('Newsletter')
 	#->setDelimiter('jpg')
 	->setMaxKeys(10)
-	->startAllInBucket($bucket)
+	->startAllInBucket($bucket, 2)
 ;
 
 if($objekts->getResponseHandler()->isError())
 {
-	print 'Code: '.$objekts->getResponseHandler()->getErrorCode()."\n";
-	print 'Message: '.$objekts->getResponseHandler()->getErrorMessage()."\n";
+	print 'Code: '.$objekts->getResponseHandler()->getCode()."\n";
+	print 'Message: '.$objekts->getResponseHandler()->getMessage()."\n";
 	exit;
 }
 
@@ -41,5 +42,5 @@ $count = 1;
 
 foreach($objekts as $objekt)
 {
-	print $count++.' - '.$objekt->getKey().' - '.$objekt->getOwner()->getDisplayName()."\n";
+	print $count++.' - '.$objekt->getKey().' - '.$objekt->getSize().' - '.$objekt->getOwner()->getDisplayName()."\n";
 }

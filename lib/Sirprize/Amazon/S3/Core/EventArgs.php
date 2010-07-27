@@ -59,6 +59,24 @@ class EventArgs extends \Doctrine\Common\EventArgs
 	}
 	
 	
+	public function getTypeName()
+	{
+		switch($this->getType())
+		{
+			case self::EMERG: return 'EMERG';
+			case self::ALERT: return 'ALERT';
+			case self::CRIT: return 'CRIT';
+			case self::ERR: return 'ERR';
+			case self::WARN: return 'WARN';
+			case self::NOTICE: return 'NOTICE';
+			case self::INFO: return 'INFO';
+			case self::DEBUG: return 'DEBUG';
+		}
+		
+		return null;
+	}
+	
+	
 	public function setSourceObject($sourceObject)
 	{
 		if(!is_object($sourceObject))

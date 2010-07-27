@@ -31,7 +31,7 @@ class EventPrinter extends S3\Core\EventListener
 			throw new S3\Exception('first argument must be an instance of Sirprize\Amazon\S3\Core\EventArgs');
 		}
 		
-        print $args[0]->getInfo()."\n";
+        print $args[0]->getTypeName().' // '.$args[0]->getInfo()."\n";
     }
 
 }

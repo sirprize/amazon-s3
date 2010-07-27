@@ -1,0 +1,30 @@
+#!/usr/bin/env php
+<?php
+
+require_once '../_config.php';
+
+
+$restClient = new \Sirprize\Rest\Client($config);
+
+$s3 = new \Sirprize\Amazon\S3($config);
+$s3->setRestClient($restClient);
+
+$bucket = $s3->getBucketsInstance()->getBucketInstance();
+$bucket->setName(S3_BUCKET);
+
+$objekt = $s3->getObjektsInstance()->getObjektInstance();
+$objekt
+	->setBucket($bucket)
+	->setKey(S3_OBJECT)
+	->setKey('Assets/Tracks/PreVi/284b44a2c661a615e30ac3e75a011e03')
+	->head(2)
+;
+
+print 'Status: '.$objekt->getResponseHandler()->getHttpResponse()->getStatus()."\n";
+print 'Code: '.$objekt->getResponseHandler()->getCode()."\n";
+print 'Message: '.$objekt->getResponseHandler()->getMessage()."\n";
+print 'Bucket: '.$objekt->getBucket()->getName()."\n";
+print 'Key: '.$objekt->getKey()."\n";
+print 'Size: '.$objekt->getSize()."\n";
+print 'ETag: '.$objekt->getETag()."\n";
+print 'Last Modified: '.$objekt->getLastModified()."\n";

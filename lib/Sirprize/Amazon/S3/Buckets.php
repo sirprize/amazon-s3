@@ -37,8 +37,8 @@ class Buckets extends S3\Core\Collection
 	{
 		$bucket = new S3\Bucket();
 		$bucket
-			->setRestClient($this->_getRestClient())
-			->setS3($this->_getS3())
+			->setRestClient($this->getRestClient())
+			->setS3($this->getS3())
 		;
 		
 		return $bucket;

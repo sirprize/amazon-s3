@@ -53,7 +53,7 @@ class S3
 	}
 	
 	
-	protected function _getRestClient()
+	public function getRestClient()
     {
         if($this->_restClient === null)
 		{
@@ -138,7 +138,49 @@ class S3
     }
 	
 	
-	protected function _getEventManagerInstance()
+	public static function getMimeFromSuffix($suffix)
+    {
+        $patterns = array(
+        	'/\.?swf$/i' => 'application/x-shockwave-flash',
+            '/\.?psd$/i' => 'image/vnd.adobe.photoshop',
+            '/\.?doc$/i' => 'application/msword',
+            '/\.?xls$/i' => 'application/vnd.ms-excel',
+            '/\.?ppt$/i' => 'application/vnd.ms-powerpoint',
+            '/\.?zip$/i' => 'application/zip',
+            '/\.?pdf$/i' => 'application/pdf',
+            '/\.?mp3$/i' => 'audio/mpeg',
+            '/\.?aif$/i' => 'audio/x-aiff',
+            '/\.?wav$/i' => 'audio/wav',
+            '/\.?bmp$/i' => 'image/bmp',
+            '/\.?gif$/i' => 'image/gif',
+            '/\.?(jpg|jpeg|pjpeg)$/i' => 'image/jpeg',
+            '/\.?png$/i' => 'image/png',
+            '/\.?tif$/i' => 'image/tiff',
+            '/\.?css$/i' => 'text/css',
+            '/\.?csv$/i' => 'text/csv',
+            '/\.?html?$/i' => 'text/html',
+            '/\.?txt$/i' => 'text/plain',
+            '/\.?rtf$/i' => 'text/rtf',
+            '/\.?mpg$/i' => 'video/mp4',
+            '/\.?qt$/i' => 'video/quicktime',
+            '/\.?avi$/i' => 'video/x-msvideo',
+            '/\.?sit$/i' => 'application/x-stuffit',
+            '/\.?tar$/i' => 'application/x-tar'
+        );
+        
+        foreach($patterns as $pattern => $mime)
+		{
+            if(preg_match($pattern, $suffix))
+			{
+				return $mime;
+			}
+        }
+
+        return '';
+    }
+	
+	
+	public function getEventManagerInstance()
 	{
 		return new \Doctrine\Common\EventManager();
 	}
@@ -180,7 +222,7 @@ class S3
 		$buckets = new S3\Buckets();
 		$buckets
 			->setS3($this)
-			->setRestClient($this->_getRestClient())
+			->setRestClient($this->getRestClient())
 		;
 		return $buckets;
 	}
@@ -191,8 +233,8 @@ class S3
 		$buckets = new S3\Objekts();
 		$buckets
 			->setS3($this)
-			->setRestClient($this->_getRestClient())
-			->setEventManager($this->_getEventManagerInstance())
+			->setRestClient($this->getRestClient())
+			->setEventManager($this->getEventManagerInstance())
 		;
 		return $buckets;
 	}

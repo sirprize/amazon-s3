@@ -67,11 +67,6 @@ class Collection extends \SplObjectStorage
 	}
 	
 	
-	/**
-	 * Get event manager
-	 *
-	 * @return \Doctrine\Common\EventManager
-	 */
 	public function getEventManager()
 	{
 		if($this->_eventManager === null)
@@ -100,7 +95,7 @@ class Collection extends \SplObjectStorage
 	}
 	
 	
-	protected function _getS3()
+	public function getS3()
 	{
 		if($this->_s3 === null)
 		{
@@ -111,7 +106,7 @@ class Collection extends \SplObjectStorage
 	}
 	
 	
-	protected function _getRestClient()
+	public function getRestClient()
 	{
 		if($this->_restClient === null)
 		{

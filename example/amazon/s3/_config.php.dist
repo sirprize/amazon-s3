@@ -1,27 +1,46 @@
 <?php
 
-define('FLICKR_NSID', '123456789');
-define('FLICKR_COLLECTION_ID', '123456789');
+define('S3_BUCKET', 'some.bucket.name');
+define('S3_OBJECT', 'some.object.key');
+
 
 $config = array(
-	'apiKey' => 'xxx',
-	'secret' => 'yyy'
+	'accessKey' => '',
+	'secretKey' => ''
 );
 
-set_include_path(implode(PATH_SEPARATOR, array(
-    realpath('/path/to/zend/library'), // path to zend framework
-	realpath('/path/to/sirprize/amazon/lib') // path to amazon lib
-	realpath('/path/to/sirprize/rest/lib') // path to rest lib
-)));
+require_once $base.'/path/to/doctrine/common/lib/Doctrine/Common/ClassLoader.php';
+$loader = new \Doctrine\Common\ClassLoader('Zend', realpath('path/to/zend/library'));
+$loader->setNamespaceSeparator('_');
+$loader->register();
 
-$frontendOptions = array(
-	'lifetime' => 7200,
-	'automatic_serialization' => true
+$loader = new \Doctrine\Common\ClassLoader('Doctrine\Common', realpath('/path/to/doctrine/common/lib'));
+$loader->register();
+
+$loader = new \Doctrine\Common\ClassLoader('Sirprize\Amazon', realpath('/path/to/amazon/lib'));
+$loader->register();
+
+$loader = new \Doctrine\Common\ClassLoader('Sirprize\Rest', realpath('/path/to/rest/lib'));
+$loader->register();
+
+
+set_include_path(
+	implode(
+		PATH_SEPARATOR,
+		array(
+    		realpath($base.'/path/to/zend/library'), // path to zend framework (make sure require's work in zend lib)
+		)
+	)
 );
 
-$backendOptions = array(
-	'cache_dir' => dirname(__FILE__).'/_cache/'
-);
+require_once 'Zend/Log/Writer/Stream.php';
+$logWriter = new Zend_Log_Writer_Stream(dirname(dirname(dirname(__FILE__))).'/_logs/'.gmdate('Ymd').'.log');
 
-require_once 'Zend/Cache.php';
-$cache = \Zend_Cache::factory('Core', 'File', $frontendOptions, $backendOptions);
+require_once 'Zend/Log.php';
+$log = new Zend_Log($logWriter);
+
+require_once 'Zend/Log/Filter/Priority.php';
+$filter = new Zend_Log_Filter_Priority(3);
+$log->addFilter($filter);
+
+date_default_timezone_set('UTC');

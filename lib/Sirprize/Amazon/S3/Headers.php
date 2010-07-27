@@ -32,7 +32,6 @@ class Headers
 	
 	
 	protected $_headers = array();
-	protected $_amzs = array();
     
     
     public function getAmzs()
@@ -40,21 +39,51 @@ class Headers
     	$amzs = array();
     	$final = array();
     	
-    	foreach($this->_amzs as $h)
+    	foreach($this->_headers as $h)
     	{
     		if(preg_match('/^x-amz/i', $h))
     		{
 				$n = strtolower(trim(preg_replace('/^(x-amz-[a-zA-Z0-9-]*):.*/i', "$1", $h)));
 				$v = trim(preg_replace('/^x-amz-[a-zA-Z0-9-]*:(.*)/i', "$1", $h));
 				$v = preg_replace('/[\t\n\r\s]+/', ' ', $v);
-				if(isset($amzs[$n])) { $amzs[$n] .= ','.$v; }
-				else { $amzs[$n] = $v; }
+				
+				if(isset($amzs[$n]))
+				{
+					$amzs[$n] .= ','.$v;
+				}
+				else {
+					$amzs[$n] = $v;
+				}
 			}
     	}
+		
     	ksort($amzs);
-    	foreach($amzs as $n => $v) { $final[] = $n.':'.$v; }
+		
+    	foreach($amzs as $n => $v)
+		{
+			$final[] = $n.':'.$v;
+		}
+		
     	return $final;
     }
+	
+	
+	
+	public function getStandard()
+    {
+    	$final = array();
+    	
+    	foreach($this->_headers as $h)
+    	{
+    		if(!preg_match('/^x-amz/i', $h))
+    		{
+				$final[] = $h;
+			}
+    	}
+		
+    	return $final;
+    }
+	
     
     
     public function getCanonicalizedAmzs()
@@ -69,23 +98,22 @@ class Headers
     	return $canonicalized;
     }
     
+	
     
     public function toArray($amzOnly = false)
     {
-        return ($amzOnly) ? $this->getAmzs() : array_merge($this->getAmzs(), $this->_headers);
+        return
+			($amzOnly)
+			? $this->getAmzs()
+			: array_merge($this->getAmzs(), $this->getStandard())
+		;
     }
+	
 	
 	
     public function add($s)
     {
     	$this->_headers[] = $s;
-    	return $this;
-    }
-    
-    
-    public function addAmz($s)
-    {
-    	$this->_amzs[] = $s;
     	return $this;
     }
     

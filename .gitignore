@@ -1,3 +1,4 @@
 .DS_Store
 example/amazon/s3/_config.php
 example/_cache/*
+example/_logs/*

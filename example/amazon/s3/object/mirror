@@ -1,0 +1,33 @@
+#!/usr/bin/env php
+<?php
+
+require_once '../_config.php';
+
+
+use \Sirprize\Amazon\S3;
+
+
+$restClient = new \Sirprize\Rest\Client($config);
+
+$s3 = new S3($config);
+$s3->setRestClient($restClient);
+
+$bucket = $s3->getBucketsInstance()->getBucketInstance();
+$bucket->setName(S3_BUCKET);
+
+$headers = $s3->getHeadersInstance();
+#$headers->add(S3\Headers::CANNED_ACL_NAME.':'.S3\Headers::ACL_PUBLIC_READ);
+
+$mirror = new S3\Tools\Mirror();
+$mirror
+	->setS3($s3)
+	->setEventManager($s3->getEventManagerInstance())
+	->addEventsToListener($s3->getEventPrinterInstance())
+	->addEventsToListener($s3->getEventLoggerInstance()->setLog($log))
+	#->force(true)
+	#->printMessages(true)
+	->setTargetRenamePattern('/^Assets\/Tracks\/PreVi\/(.*)/', 'Assets/Tracks/Vinyl/$1.mp3')
+	#->setTargetRenamePattern('/^(.*)$/', 'Xxx/$1')
+	#->addExcludePattern('/^Assets\/Tracks\/Vinyl/')
+	->run($bucket, $bucket, 'Assets/Tracks/PreVi', '', $headers)
+;

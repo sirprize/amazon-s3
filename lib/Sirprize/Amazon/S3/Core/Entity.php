@@ -30,6 +30,8 @@ class Entity
 	protected $_started = false;
 	protected $_loaded = false;
 	protected $_responseHandler = null;
+	protected $_eventManager = null;
+	protected $_events = array();
 	
 	
 	public function setS3(S3 $s3)
@@ -57,7 +59,43 @@ class Entity
 	}
 	
 	
-	protected function _getS3()
+	
+	public function setEventManager(\Doctrine\Common\EventManager $eventManager)
+	{
+		$this->_eventManager = $eventManager;
+		return $this;
+	}
+	
+	
+	public function getEventManager()
+	{
+		if($this->_eventManager === null)
+		{
+			throw new S3\Exception('call setEventManager() before '.__METHOD__);
+		}
+		
+		return $this->_eventManager;
+	}
+	
+	
+	public function getEvents()
+	{
+		return $this->_events;
+	}
+	
+	
+	public function addEventsToListener(S3\Core\EventListener $listener)
+	{
+		foreach($this->_events as $event)
+		{
+			$this->getEventManager()->addEventListener($event, $listener);
+		}
+		
+		return $this;
+	}
+	
+	
+	public function getS3()
 	{
 		if($this->_s3 === null)
 		{
@@ -69,7 +107,7 @@ class Entity
 	
 	
 	
-	protected function _getRestClient()
+	public function getRestClient()
 	{
 		if($this->_restClient === null)
 		{
