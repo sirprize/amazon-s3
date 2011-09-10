@@ -192,12 +192,7 @@ class Mirror
 		$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::INFO)->setMessage(__METHOD__);
 		$this->getEventManager()->dispatchEvent(self::EVENT_START_RUN, $eventArgs);
 		
-		$this->_countKeys = 0;
-		$this->_countExcluded = 0;
-		$this->_countSkipped = 0;
-		$this->_countReplaced = 0;
-		$this->_countCopied = 0;
-		$this->_countErrors = 0;
+		$this->_reset();
 		
 		$objekts = null;
 		$lastKey = null; // last object is used as marker for next request
@@ -233,6 +228,85 @@ class Mirror
 			}
 		}
 		
+		return $this->_handleSummary();
+	}
+	
+	
+	
+	
+	
+	public function fix($logFile, S3\Bucket $sourceBucket, S3\Bucket $targetBucket, S3\Headers $headers = null)
+	{
+		if(!is_file($logFile) || !is_readable($logFile))
+		{
+			die("$logFile could not be read");
+		}
+		
+		$eventArgs =$this->getS3()->getEventArgsInstance();
+		$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::INFO)->setMessage(__METHOD__);
+		$this->getEventManager()->dispatchEvent(self::EVENT_START_RUN, $eventArgs);
+		
+		$this->_reset();
+		
+		$objekts = $this->getS3()->getObjektsInstance();
+		$sourceBucketName = $sourceBucket->getName();
+		
+		$handle = fopen($logFile, "r");
+		$contents = fread($handle, filesize($logFile));
+		fclose($handle);
+		$lines = explode("\n", $contents);
+		#print_r($lines);
+		
+		foreach($lines as $line)
+		{
+			if(!preg_match("/ERR \(3\): Sirprize\\\Amazon\\\S3\\\Tools\\\Mirror::_copy \/\/ $sourceBucketName\/(.*) >/", $line, $matches))
+			{
+				continue;
+			}
+			
+			$objekt = $objekts->getObjektInstance();
+			$objekt->setBucket($sourceBucket);
+			$objekt->setKey($matches[1]);
+			
+			try {
+				$this->_copy($objekt, $targetBucket, clone $headers);
+			}
+			catch (\Exception $exception)
+			{
+				$this->_numExceptions++;
+				
+				if($this->_numExceptions == $this->_maxExceptions)
+				{
+					exit;
+				}
+				
+				$eventArgs =$this->getS3()->getEventArgsInstance();
+				$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::ERR)->setMessage(__METHOD__.' // '.$exception->getMessage());
+				$this->getEventManager()->dispatchEvent(self::EVENT_BUCKET_GET_ERROR, $eventArgs);
+			}
+		}
+		
+		return $this->_handleSummary();
+	}
+	
+	
+	
+	
+	
+	protected function _reset()
+	{
+		$this->_countKeys = 0;
+		$this->_countExcluded = 0;
+		$this->_countSkipped = 0;
+		$this->_countReplaced = 0;
+		$this->_countCopied = 0;
+		$this->_countErrors = 0;
+	}
+	
+	
+	
+	protected function _handleSummary()
+	{
 		$summary  = "=====================================\n";
 		$summary .= "EXCLUDED: {$this->_countExcluded}\n";
 		$summary .= "SKIPPED: {$this->_countSkipped}\n";
@@ -242,7 +316,7 @@ class Mirror
 		$summary .= "TOTAL: {$this->_countKeys}\n";
 		$summary .= "=====================================\n";
 		
-		$eventArgs =$this->getS3()->getEventArgsInstance();
+		$eventArgs = $this->getS3()->getEventArgsInstance();
 		$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::INFO)->setMessage($summary);
 		$this->getEventManager()->dispatchEvent(self::EVENT_SUMMARY, $eventArgs);
 		
@@ -255,6 +329,7 @@ class Mirror
 			'keys' => $this->_countKeys
 		);
 	}
+	
 	
 	
 	
