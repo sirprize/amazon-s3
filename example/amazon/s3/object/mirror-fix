@@ -28,5 +28,5 @@ $mirror
 	#->printMessages(true)
 	->setTargetRenamePattern('/^bmx\/IMG_(.*)/', 'bmx2/$1')
 	#->addExcludePattern('/^(01|_Backups|_Logs|_Test)/')
-	->run($bucket, $bucket, 'bmx/IMG', '', $headers)
+	->fix('mirror-fix-example.log', $bucket, $bucket, $headers)
 ;

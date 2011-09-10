@@ -12,7 +12,7 @@ $s3->setRestClient($restClient);
 $bucket = $s3->getBucketsInstance()->getBucketInstance();
 $bucket->setName(S3_BUCKET);
 
-$prefix = 'Assets/Tracks/PreVi';
+$prefix = 'bmx';
 $delimiter = '';
 $maxKeys = 1000;
 
@@ -35,7 +35,7 @@ while($objekts === null || $objekts->getIsTruncated())
 		$objekt
 			->setEventManager($s3->getEventManagerInstance())
 			->addEventsToListener($s3->getEventPrinterInstance())
-			->addEventsToListener($s3->getEventLoggerInstance()->setLog($log))
+			->addEventsToListener($s3->getEventLoggerInstance()->setLog(getLog('test')))
 			->delete(2)
 		;
 		#print $bucket->getName().'/'.$objekt->getKey()."\n";

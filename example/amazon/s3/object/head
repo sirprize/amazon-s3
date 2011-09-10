@@ -16,7 +16,6 @@ $objekt = $s3->getObjektsInstance()->getObjektInstance();
 $objekt
 	->setBucket($bucket)
 	->setKey(S3_OBJECT)
-	->setKey('Assets/Tracks/PreVi/284b44a2c661a615e30ac3e75a011e03')
 	->head(2)
 ;
 

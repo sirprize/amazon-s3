@@ -12,7 +12,7 @@ $s3->setRestClient($restClient);
 $bucket = $s3->getBucketsInstance()->getBucketInstance();
 $bucket->setName(S3_BUCKET);
 
-$prefix = 'Assets/Tracks/Vinyl';
+$prefix = 'bmx';
 $delimiter = '';
 $maxKeys = 1000;
 

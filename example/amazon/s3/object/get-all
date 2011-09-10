@@ -12,8 +12,8 @@ $s3->setRestClient($restClient);
 $bucket = $s3->getBucketsInstance()->getBucketInstance();
 $bucket->setName(S3_BUCKET);
 
-$prefix = 'Assets';
-$delimiter = 'V';
+$prefix = 'bmx';
+$delimiter = '';
 $maxKeys = 10;
 
 $objekts = null;

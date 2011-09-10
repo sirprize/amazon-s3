@@ -15,14 +15,14 @@ $bucket->setName(S3_BUCKET);
 $newObjekt = $s3->getObjektsInstance()->getObjektInstance();
 $newObjekt
 	->setBucket($bucket)
-	->setKey('4O88nAT5eaRP.gif')
+	->setKey('20110821-vision-new.jpg')
 ;
 
 $objekt = $s3->getObjektsInstance()->getObjektInstance();
 
 $objekt
 	->addEventsToListener($s3->getEventPrinterInstance())
-	->addEventsToListener($s3->getEventLoggerInstance()->setLog($log))
+	->addEventsToListener($s3->getEventLoggerInstance()->setLog(getLog('test')))
 	->setBucket($bucket)
 	->setKey(S3_OBJECT)
 	->copy($newObjekt, null, 2)

@@ -17,8 +17,8 @@ $objekts = $s3->getObjektsInstance();
 
 $objekts
 	->addEventsToListener($s3->getEventPrinterInstance())
-	->addEventsToListener($s3->getEventLoggerInstance()->setLog($log))
-	->setPrefix('Newsletter')
+	->addEventsToListener($s3->getEventLoggerInstance()->setLog(getLog('test')))
+	->setPrefix('bmx')
 	#->setDelimiter('jpg')
 	->setMaxKeys(10)
 	->startAllInBucket($bucket, 2)
