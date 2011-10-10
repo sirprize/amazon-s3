@@ -9,18 +9,20 @@ $config = array(
 	'secretKey' => ''
 );
 
-require_once $base.'/path/to/doctrine/common/lib/Doctrine/Common/ClassLoader.php';
-$loader = new \Doctrine\Common\ClassLoader('Zend', realpath('path/to/zend/library'));
+$base = dirname(dirname(dirname(dirname(__FILE__))));
+
+require_once $base.'/vendor/doctrine2-common/lib/Doctrine/Common/ClassLoader.php';
+$loader = new \Doctrine\Common\ClassLoader('Zend', realpath($base.'/vendor/zend-framework/library'));
 $loader->setNamespaceSeparator('_');
 $loader->register();
 
-$loader = new \Doctrine\Common\ClassLoader('Doctrine\Common', realpath('/path/to/doctrine/common/lib'));
+$loader = new \Doctrine\Common\ClassLoader('Doctrine\Common', realpath($base.'/vendor/doctrine2-common/lib'));
 $loader->register();
 
-$loader = new \Doctrine\Common\ClassLoader('Sirprize\Amazon', realpath('/path/to/amazon/lib'));
+$loader = new \Doctrine\Common\ClassLoader('Sirprize\Amazon', realpath($base.'/lib'));
 $loader->register();
 
-$loader = new \Doctrine\Common\ClassLoader('Sirprize\Rest', realpath('/path/to/rest/lib'));
+$loader = new \Doctrine\Common\ClassLoader('Sirprize\Rest', realpath($base.'/vendor/sirprize-rest/lib'));
 $loader->register();
 
 
@@ -28,19 +30,19 @@ set_include_path(
 	implode(
 		PATH_SEPARATOR,
 		array(
-    		realpath($base.'/path/to/zend/library'), // path to zend framework (make sure require's work in zend lib)
+    		realpath($base.'/vendor/zend-framework/library'), // path to zend framework (make sure require's work in zend lib)
 		)
 	)
 );
 
-require_once 'Zend/Log/Writer/Stream.php';
-$logWriter = new Zend_Log_Writer_Stream(dirname(dirname(dirname(__FILE__))).'/_logs/'.gmdate('Ymd').'.log');
-
-require_once 'Zend/Log.php';
-$log = new Zend_Log($logWriter);
-
-require_once 'Zend/Log/Filter/Priority.php';
-$filter = new Zend_Log_Filter_Priority(3);
-$log->addFilter($filter);
-
 date_default_timezone_set('UTC');
+
+
+function getLog($name = '')
+{
+	$logWriter = new Zend_Log_Writer_Stream(dirname(dirname(dirname(dirname(__FILE__)))).'/example/_logs/'.gmdate('Ymd').'-'.$name.'.log');
+	$log = new Zend_Log($logWriter);
+	$filter = new Zend_Log_Filter_Priority(3);
+	$log->addFilter($filter);
+	return $log;
+}
