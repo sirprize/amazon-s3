@@ -6,13 +6,13 @@ require_once '../_config.php';
 
 $restClient = new \Sirprize\Rest\Client($config);
 
-$s3 = new \Sirprize\Amazon\S3($config);
-$s3->setRestClient($restClient);
+$service = new \Sirprize\Amazon\S3\Service($config);
+$service->setRestClient($restClient);
 
-$bucket = $s3->getBucketsInstance()->getBucketInstance();
+$bucket = $service->getBucketsInstance()->getBucketInstance();
 $bucket->setName(S3_BUCKET);
 
-$objekt = $s3->getObjektsInstance()->getObjektInstance();
+$objekt = $service->getObjektsInstance()->getObjektInstance();
 $objekt
 	->setBucket($bucket)
 	->setKey(S3_OBJECT)

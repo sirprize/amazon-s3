@@ -7,17 +7,17 @@ require_once '../_config.php';
 $restClient = new \Sirprize\Rest\Client($config);
 #$restClient->setCache($cache);
 
-$s3 = new \Sirprize\Amazon\S3($config);
-$s3->setRestClient($restClient);
+$service = new \Sirprize\Amazon\S3\Service($config);
+$service->setRestClient($restClient);
 
-$bucket = $s3->getBucketsInstance()->getBucketInstance();
+$bucket = $service->getBucketsInstance()->getBucketInstance();
 $bucket->setName(S3_BUCKET);
 
-$objekts = $s3->getObjektsInstance();
+$objekts = $service->getObjektsInstance();
 
 $objekts
-	->addEventsToListener($s3->getEventPrinterInstance())
-	->addEventsToListener($s3->getEventLoggerInstance()->setLog(getLog('test')))
+	->addEventsToListener($service->getEventPrinterInstance())
+	->addEventsToListener($service->getEventLoggerInstance()->setLog(getLog('test')))
 	->setPrefix('bmx')
 	#->setDelimiter('jpg')
 	->setMaxKeys(10)

@@ -6,23 +6,23 @@ require_once '../_config.php';
 
 $restClient = new \Sirprize\Rest\Client($config);
 
-$s3 = new \Sirprize\Amazon\S3($config);
-$s3->setRestClient($restClient);
+$service = new \Sirprize\Amazon\S3\Service($config);
+$service->setRestClient($restClient);
 
-$bucket = $s3->getBucketsInstance()->getBucketInstance();
+$bucket = $service->getBucketsInstance()->getBucketInstance();
 $bucket->setName(S3_BUCKET);
 
-$newObjekt = $s3->getObjektsInstance()->getObjektInstance();
+$newObjekt = $service->getObjektsInstance()->getObjektInstance();
 $newObjekt
 	->setBucket($bucket)
 	->setKey('20110821-vision-new.jpg')
 ;
 
-$objekt = $s3->getObjektsInstance()->getObjektInstance();
+$objekt = $service->getObjektsInstance()->getObjektInstance();
 
 $objekt
-	->addEventsToListener($s3->getEventPrinterInstance())
-	->addEventsToListener($s3->getEventLoggerInstance()->setLog(getLog('test')))
+	->addEventsToListener($service->getEventPrinterInstance())
+	->addEventsToListener($service->getEventLoggerInstance()->setLog(getLog('test')))
 	->setBucket($bucket)
 	->setKey(S3_OBJECT)
 	->copy($newObjekt, null, 2)

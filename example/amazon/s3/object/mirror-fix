@@ -9,21 +9,21 @@ use \Sirprize\Amazon\S3;
 
 $restClient = new \Sirprize\Rest\Client($config);
 
-$s3 = new S3($config);
-$s3->setRestClient($restClient);
+$service = new S3($config);
+$service->setRestClient($restClient);
 
-$bucket = $s3->getBucketsInstance()->getBucketInstance();
+$bucket = $service->getBucketsInstance()->getBucketInstance();
 $bucket->setName(S3_BUCKET);
 
-$headers = $s3->getHeadersInstance();
+$headers = $service->getHeadersInstance();
 #$headers->add(S3\Headers::CANNED_ACL_NAME.':'.S3\Headers::ACL_PUBLIC_READ);
 
 $mirror = new S3\Tools\Mirror();
 $mirror
-	->setS3($s3)
-	->setEventManager($s3->getEventManagerInstance())
-	->addEventsToListener($s3->getEventPrinterInstance())
-	->addEventsToListener($s3->getEventLoggerInstance()->setLog(getLog('test')))
+	->setService($service)
+	->setEventManager($service->getEventManagerInstance())
+	->addEventsToListener($service->getEventPrinterInstance())
+	->addEventsToListener($service->getEventLoggerInstance()->setLog(getLog('test')))
 	#->force(true)
 	#->printMessages(true)
 	->setTargetRenamePattern('/^bmx\/IMG_(.*)/', 'bmx2/$1')

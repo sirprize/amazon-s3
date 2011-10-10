@@ -25,7 +25,7 @@ class Entity
 {
 	
 	
-	protected $_s3 = null;
+	protected $_service = null;
 	protected $_restClient = null;
 	protected $_started = false;
 	protected $_loaded = false;
@@ -34,9 +34,9 @@ class Entity
 	protected $_events = array();
 	
 	
-	public function setS3(S3 $s3)
+	public function setService(S3\Service $service)
 	{
-		$this->_s3 = $s3;
+		$this->_service = $service;
 		return $this;
 	}
 	
@@ -95,14 +95,14 @@ class Entity
 	}
 	
 	
-	public function getS3()
+	public function getService()
 	{
-		if($this->_s3 === null)
+		if($this->_service === null)
 		{
-			throw new S3\Exception('call setS3() before '.__METHOD__);
+			throw new S3\Exception('call setService() before '.__METHOD__);
 		}
 		
-		return $this->_s3;
+		return $this->_service;
 	}
 	
 	

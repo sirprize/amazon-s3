@@ -6,10 +6,10 @@ require_once '../_config.php';
 
 $restClient = new \Sirprize\Rest\Client($config);
 
-$s3 = new \Sirprize\Amazon\S3($config);
-$s3->setRestClient($restClient);
+$service = new \Sirprize\Amazon\S3\Service($config);
+$service->setRestClient($restClient);
 
-$bucket = $s3->getBucketsInstance()->getBucketInstance();
+$bucket = $service->getBucketsInstance()->getBucketInstance();
 $bucket->setName(S3_BUCKET);
 
 $prefix = 'bmx';
@@ -21,7 +21,7 @@ $lastKey = null; // last object-key is used as marker for next request
 
 while($objekts === null || $objekts->getIsTruncated())
 {
-	$objekts = $s3->getObjektsInstance();
+	$objekts = $service->getObjektsInstance();
 	$objekts
 		->setPrefix($prefix)
 		->setDelimiter($delimiter)

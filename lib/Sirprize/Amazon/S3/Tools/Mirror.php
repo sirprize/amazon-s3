@@ -24,7 +24,7 @@ use \Sirprize\Amazon\S3;
 class Mirror
 {
 	
-	protected $_s3 = null;
+	protected $_service = null;
 	protected $_force = false; # overwrite destination if exists
 	protected $_numRetries = 2;
 	#protected $_printMessages = false;
@@ -49,21 +49,21 @@ class Mirror
 	
 	
 	
-	public function setS3(S3 $s3)
+	public function setService(S3\Service $service)
 	{
-		$this->_s3 = $s3;
+		$this->_service = $service;
 		return $this;
 	}
 	
 	
-	public function getS3()
+	public function getService()
 	{
-		if($this->_s3 === null)
+		if($this->_service === null)
 		{
-			throw new S3\Exception('call setS3() before '.__METHOD__);
+			throw new S3\Exception('call setService() before '.__METHOD__);
 		}
 		
-		return $this->_s3;
+		return $this->_service;
 	}
 	
 	
@@ -188,7 +188,7 @@ class Mirror
 	
 	public function run(S3\Bucket $sourceBucket, S3\Bucket $targetBucket, $sourcePrefix = '', $sourceDelimiter = '', S3\Headers $headers = null)
 	{
-		$eventArgs =$this->getS3()->getEventArgsInstance();
+		$eventArgs =$this->getService()->getEventArgsInstance();
 		$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::INFO)->setMessage(__METHOD__);
 		$this->getEventManager()->dispatchEvent(self::EVENT_START_RUN, $eventArgs);
 		
@@ -200,7 +200,7 @@ class Mirror
 		while($objekts === null || $objekts->getIsTruncated())
 		{
 			try {
-				$objekts = $this->getS3()->getObjektsInstance();
+				$objekts = $this->getService()->getObjektsInstance();
 				$objekts
 					->setPrefix($sourcePrefix)
 					->setMarker($lastKey)
@@ -222,7 +222,7 @@ class Mirror
 					exit;
 				}
 				
-				$eventArgs =$this->getS3()->getEventArgsInstance();
+				$eventArgs =$this->getService()->getEventArgsInstance();
 				$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::ERR)->setMessage(__METHOD__.' // '.$exception->getMessage());
 				$this->getEventManager()->dispatchEvent(self::EVENT_BUCKET_GET_ERROR, $eventArgs);
 			}
@@ -242,13 +242,13 @@ class Mirror
 			die("$logFile could not be read");
 		}
 		
-		$eventArgs =$this->getS3()->getEventArgsInstance();
+		$eventArgs =$this->getService()->getEventArgsInstance();
 		$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::INFO)->setMessage(__METHOD__);
 		$this->getEventManager()->dispatchEvent(self::EVENT_START_RUN, $eventArgs);
 		
 		$this->_reset();
 		
-		$objekts = $this->getS3()->getObjektsInstance();
+		$objekts = $this->getService()->getObjektsInstance();
 		$sourceBucketName = $sourceBucket->getName();
 		
 		$handle = fopen($logFile, "r");
@@ -280,7 +280,7 @@ class Mirror
 					exit;
 				}
 				
-				$eventArgs =$this->getS3()->getEventArgsInstance();
+				$eventArgs =$this->getService()->getEventArgsInstance();
 				$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::ERR)->setMessage(__METHOD__.' // '.$exception->getMessage());
 				$this->getEventManager()->dispatchEvent(self::EVENT_BUCKET_GET_ERROR, $eventArgs);
 			}
@@ -316,7 +316,7 @@ class Mirror
 		$summary .= "TOTAL: {$this->_countKeys}\n";
 		$summary .= "=====================================\n";
 		
-		$eventArgs = $this->getS3()->getEventArgsInstance();
+		$eventArgs = $this->getService()->getEventArgsInstance();
 		$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::INFO)->setMessage($summary);
 		$this->getEventManager()->dispatchEvent(self::EVENT_SUMMARY, $eventArgs);
 		
@@ -339,7 +339,7 @@ class Mirror
 	{
 		if($headers === null)
 		{
-			$headers = $this->getS3()->getHeadersInstance();
+			$headers = $this->getService()->getHeadersInstance();
 		}
 		
 		$this->_countKeys++;
@@ -362,14 +362,14 @@ class Mirror
 			{
 				$this->_countExcluded++;
 				#$this->_print("$task // EXCLUDED\n");
-				$eventArgs =$this->getS3()->getEventArgsInstance();
+				$eventArgs =$this->getService()->getEventArgsInstance();
 				$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::INFO)->setMessage("$task // EXCLUDED");
 				$this->getEventManager()->dispatchEvent(self::EVENT_OBJECT_EXCLUDED, $eventArgs);
 				return;
 			}
 		}
 		
-		$newObjekt = $this->getS3()->getObjektsInstance()->getObjektInstance();
+		$newObjekt = $this->getService()->getObjektsInstance()->getObjektInstance();
 		$newObjekt
 			->setBucket($targetBucket)
 			->setKey($targetKey)
@@ -403,7 +403,7 @@ class Mirror
 			{
 				$this->_countSkipped++;
 				#$this->_print("$task // SKIPPED (EXISTS)\n");
-				$eventArgs =$this->getS3()->getEventArgsInstance();
+				$eventArgs =$this->getService()->getEventArgsInstance();
 				$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::INFO)->setMessage("$task // SKIPPED (EXISTS)");
 				$this->getEventManager()->dispatchEvent(self::EVENT_OBJECT_SKIPPED, $eventArgs);
 				return;
@@ -416,7 +416,7 @@ class Mirror
 					// error occurred during copy operation
 					$this->_countErrors++;
 					#$this->_print("$task // ERROR // ".$objekt->getResponseHandler()->getMessage()." (".$objekt->getResponseHandler()->getCode().")\n");
-					$eventArgs =$this->getS3()->getEventArgsInstance();
+					$eventArgs =$this->getService()->getEventArgsInstance();
 					$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::ERR)->setMessage("$task // ERROR // ".$objekt->getResponseHandler()->getMessage()." (".$objekt->getResponseHandler()->getCode().")");
 					$this->getEventManager()->dispatchEvent(self::EVENT_OBJECT_ERROR, $eventArgs);
 					return;
@@ -425,7 +425,7 @@ class Mirror
 				{
 					$this->_countReplaced++;
 					#$this->_print("$task // REPLACE OK\n");
-					$eventArgs =$this->getS3()->getEventArgsInstance();
+					$eventArgs =$this->getService()->getEventArgsInstance();
 					$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::INFO)->setMessage("$task // REPLACE OK");
 					$this->getEventManager()->dispatchEvent(self::EVENT_OBJECT_REPLACED, $eventArgs);
 					return;
@@ -433,7 +433,7 @@ class Mirror
 				else {
 					$this->_countCopied++;
 					#$this->_print("$task // COPY OK\n");
-					$eventArgs =$this->getS3()->getEventArgsInstance();
+					$eventArgs =$this->getService()->getEventArgsInstance();
 					$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::INFO)->setMessage("$task // COPY OK");
 					$this->getEventManager()->dispatchEvent(self::EVENT_OBJECT_COPIED, $eventArgs);
 					return;
@@ -444,7 +444,7 @@ class Mirror
 		{
 			$this->_countErrors++;
 			#$msg = "$task // ERROR (".$exception->getMessage().")\n";
-			$eventArgs =$this->getS3()->getEventArgsInstance();
+			$eventArgs =$this->getService()->getEventArgsInstance();
 			$eventArgs->setSourceObject($this)->setType(S3\Core\EventArgs::ERR)->setMessage("$task // ERROR (".$exception->getMessage().")");
 			$this->getEventManager()->dispatchEvent(self::EVENT_OBJECT_ERROR, $eventArgs);
 			#$this->_print($msg);

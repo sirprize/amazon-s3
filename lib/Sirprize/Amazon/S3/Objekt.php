@@ -190,11 +190,11 @@ class Objekt extends S3\Core\Entity
 			throw new S3\Exception('call setKey() before '.__METHOD__);
 		}
 		
-		$date = gmdate(S3::DATE_FORMAT);
+		$date = gmdate(S3\Service::DATE_FORMAT);
 		$md5 = '';
 		$mime = '';
 		
-		$authSignature = $this->getS3()->makeAuthSignature(
+		$authSignature = $this->getService()->makeAuthSignature(
 			'HEAD',
 			$md5,
 			$mime,
@@ -203,14 +203,14 @@ class Objekt extends S3\Core\Entity
 			'/'.$this->getBucket()->getName().'/'.$this->getKey()
 		);
 		
-		$headers = $this->getS3()->getHeadersInstance();
+		$headers = $this->getService()->getHeadersInstance();
 		
 		$headers
 			->add('Authorization: '.$authSignature)
 			->add('Date: '.$date)
 		;
 		
-		$uri = S3::makeUri($this->getBucket()->getName(), $this->getKey());
+		$uri = S3\Service::makeUri($this->getBucket()->getName(), $this->getKey());
 		$uri = \Zend_Uri::factory($uri);
 		
 		$this->getRestClient()
@@ -220,14 +220,14 @@ class Objekt extends S3\Core\Entity
 			->setHeaders($headers->toArray())
 		;
 		
-		$this->_responseHandler = $this->getS3()->getResponseHandlerInstance();
+		$this->_responseHandler = $this->getService()->getResponseHandlerInstance();
 		$this->getRestClient()->head($this->_responseHandler, $numRetries);
 		
 		if($this->_responseHandler->isError())
 		{
 			// service error
 			$eventArgs =
-				$this->getS3()->getEventArgsInstance()
+				$this->getService()->getEventArgsInstance()
 				->setType(S3\Core\EventArgs::ERR)
 				->setCode($this->_responseHandler->getCode())
 				->setMessage($this->_responseHandler->getMessage())
@@ -252,7 +252,7 @@ class Objekt extends S3\Core\Entity
 		*/
 		
 		$eventArgs =
-			$this->getS3()->getEventArgsInstance()
+			$this->getService()->getEventArgsInstance()
 			->setType(S3\Core\EventArgs::INFO)
 			->setMessage('OBJECT::HEAD '.$this->getBucket()->getName().'/'.$this->getKey())
 			->setSourceObject($this)
@@ -289,11 +289,11 @@ class Objekt extends S3\Core\Entity
 		
 		if($headers === null)
 		{
-			$headers = $this->getS3()->getHeadersInstance();
+			$headers = $this->getService()->getHeadersInstance();
 		}
 		
-		$mime = S3::getMimeFromSuffix($this->getKey());
-		$date = gmdate(S3::DATE_FORMAT);
+		$mime = S3\Service::getMimeFromSuffix($this->getKey());
+		$date = gmdate(S3\Service::DATE_FORMAT);
 		
 		$directive
 			= ($mime || sizeof($headers->toArray()))
@@ -304,7 +304,7 @@ class Objekt extends S3\Core\Entity
 		$headers->add(S3\Headers::METADATA_DIRECTIVE.':'.$directive);
 		$headers->add(S3\Headers::COPY_SOURCE.':/'.$this->getBucket()->getName().'/'.$this->getKey());
 		
-		$authSignature = $this->getS3()->makeAuthSignature(
+		$authSignature = $this->getService()->makeAuthSignature(
 			'PUT',
 			'',
 			$mime,
@@ -319,7 +319,7 @@ class Objekt extends S3\Core\Entity
 			->add('Date: '.$date)
 		;
 		
-		$uri = S3::makeUri($newObjekt->getBucket()->getName(), $newObjekt->getKey());
+		$uri = S3\Service::makeUri($newObjekt->getBucket()->getName(), $newObjekt->getKey());
 		$uri = \Zend_Uri::factory($uri);
 		
 		$this->getRestClient()
@@ -329,7 +329,7 @@ class Objekt extends S3\Core\Entity
 			->setHeaders($headers->toArray())
 		;
 		
-		$this->_responseHandler = $this->getS3()->getResponseHandlerInstance();
+		$this->_responseHandler = $this->getService()->getResponseHandlerInstance();
 		$this->getRestClient()->put($this->_responseHandler, $numRetries);
 		
 		$eventMsg = 'OBJECT::COPY '.$this->getBucket()->getName().'/'.$this->getKey().' > '.$newObjekt->getBucket()->getName().'/'.$newObjekt->getKey();
@@ -338,7 +338,7 @@ class Objekt extends S3\Core\Entity
 		{
 			// service error
 			$eventArgs =
-				$this->getS3()->getEventArgsInstance()
+				$this->getService()->getEventArgsInstance()
 				->setType(S3\Core\EventArgs::ERR)
 				->setCode($this->_responseHandler->getCode())
 				->setMessage($eventMsg.' // '.$this->_responseHandler->getMessage())
@@ -350,7 +350,7 @@ class Objekt extends S3\Core\Entity
 		}
 		
 		$eventArgs =
-			$this->getS3()->getEventArgsInstance()
+			$this->getService()->getEventArgsInstance()
 			->setType(S3\Core\EventArgs::INFO)
 			->setMessage($eventMsg)
 			->setSourceObject($this)
@@ -374,9 +374,9 @@ class Objekt extends S3\Core\Entity
 			throw new S3\Exception('call setKey() before '.__METHOD__);
 		}
 		
-		$date = gmdate(S3::DATE_FORMAT);
+		$date = gmdate(S3\Service::DATE_FORMAT);
 		
-		$authSignature = $this->getS3()->makeAuthSignature(
+		$authSignature = $this->getService()->makeAuthSignature(
 			'DELETE',
 			'',
 			'',
@@ -385,14 +385,14 @@ class Objekt extends S3\Core\Entity
 			'/'.$this->getBucket()->getName().'/'.$this->getKey()
 		);
 		
-		$headers = $this->getS3()->getHeadersInstance();
+		$headers = $this->getService()->getHeadersInstance();
 		
 		$headers
 			->add('Authorization: '.$authSignature)
 			->add('Date: '.$date)
 		;
 		
-		$uri = S3::makeUri($this->getBucket()->getName(), $this->getKey());
+		$uri = S3\Service::makeUri($this->getBucket()->getName(), $this->getKey());
 		$uri = \Zend_Uri::factory($uri);
 		
 		$this->getRestClient()
@@ -402,14 +402,14 @@ class Objekt extends S3\Core\Entity
 			->setHeaders($headers->toArray())
 		;
 		
-		$this->_responseHandler = $this->getS3()->getResponseHandlerInstance();
+		$this->_responseHandler = $this->getService()->getResponseHandlerInstance();
 		$this->getRestClient()->delete($this->_responseHandler, $numRetries);
 		
 		if($this->_responseHandler->isError())
 		{
 			// service error
 			$eventArgs =
-				$this->getS3()->getEventArgsInstance()
+				$this->getService()->getEventArgsInstance()
 				->setType(S3\Core\EventArgs::ERR)
 				->setCode($this->_responseHandler->getCode())
 				->setMessage($this->_responseHandler->getMessage())
@@ -421,7 +421,7 @@ class Objekt extends S3\Core\Entity
 		}
 		
 		$eventArgs =
-			$this->getS3()->getEventArgsInstance()
+			$this->getService()->getEventArgsInstance()
 			->setType(S3\Core\EventArgs::INFO)
 			->setMessage('OBJECT::DELETE '.$this->getBucket()->getName().'/'.$this->getKey())
 			->setSourceObject($this)

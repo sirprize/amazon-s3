@@ -15,13 +15,13 @@
  */
 
 
-namespace Sirprize\Amazon;
+namespace Sirprize\Amazon\S3;
 
 
 use \Sirprize\Amazon\S3;
 
 
-class S3
+class Service
 {
 	
 	const DATE_FORMAT = 'D, d M Y G:i:s T';
@@ -221,7 +221,7 @@ class S3
 	{
 		$buckets = new S3\Buckets();
 		$buckets
-			->setS3($this)
+			->setService($this)
 			->setRestClient($this->getRestClient())
 		;
 		return $buckets;
@@ -232,7 +232,7 @@ class S3
 	{
 		$buckets = new S3\Objekts();
 		$buckets
-			->setS3($this)
+			->setService($this)
 			->setRestClient($this->getRestClient())
 			->setEventManager($this->getEventManagerInstance())
 		;

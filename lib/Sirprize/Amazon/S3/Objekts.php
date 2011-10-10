@@ -130,7 +130,7 @@ class Objekts extends S3\Core\Collection
 		$objekt = new S3\Objekt();
 		$objekt
 			->setRestClient($this->getRestClient())
-			->setS3($this->getS3())
+			->setService($this->getService())
 			->setEventManager($this->getEventManager())
 		;
 		
@@ -196,12 +196,12 @@ class Objekts extends S3\Core\Collection
 			$args['delimiter'] = $this->_delimiter;
 		}
 		
-		$date = gmdate(S3::DATE_FORMAT);
+		$date = gmdate(S3\Service::DATE_FORMAT);
 		$md5 = '';
 		$mime = '';
 		$key = '';
 		
-		$authSignature = $this->getS3()->makeAuthSignature(
+		$authSignature = $this->getService()->makeAuthSignature(
 			'GET',
 			$md5,
 			$mime,
@@ -210,14 +210,14 @@ class Objekts extends S3\Core\Collection
 			'/'.$bucket->getName().'/'
 		);
 		
-		$headers = $this->getS3()->getHeadersInstance();
+		$headers = $this->getService()->getHeadersInstance();
 		
 		$headers
 			->add('Authorization: '.$authSignature)
 			->add('Date: '.$date)
 		;
 		
-		$uri = S3::makeUri($bucket->getName(), $key);
+		$uri = S3\Service::makeUri($bucket->getName(), $key);
 		$uri = \Zend_Uri::factory($uri);
 		
 		$this->getRestClient()
@@ -228,14 +228,14 @@ class Objekts extends S3\Core\Collection
 			->setHeaders($headers->toArray())
 		;
 		
-		$this->_responseHandler = $this->getS3()->getResponseHandlerInstance();
+		$this->_responseHandler = $this->getService()->getResponseHandlerInstance();
 		$this->getRestClient()->get($this->_responseHandler, $numRetries);
 		
 		if($this->_responseHandler->isError())
 		{
 			// service error
 			$eventArgs =
-				$this->getS3()->getEventArgsInstance()
+				$this->getService()->getEventArgsInstance()
 				->setType(S3\Core\EventArgs::ERR)
 				->setCode($this->_responseHandler->getCode())
 				->setMessage($this->_responseHandler->getMessage())
@@ -249,7 +249,7 @@ class Objekts extends S3\Core\Collection
 		$this->load($this->_responseHandler->getDom(), $bucket);
 		
 		$eventArgs =
-			$this->getS3()->getEventArgsInstance()
+			$this->getService()->getEventArgsInstance()
 			->setType(S3\Core\EventArgs::INFO)
 			->setMessage('result returned %1$s objects', array($this->count()))
 			->setSourceObject($this)
